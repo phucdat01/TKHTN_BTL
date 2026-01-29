@@ -509,7 +509,7 @@ void StartTask1_SHT30(void *argument)
   {
     sht3x_read_temperature_and_humidity(&sht3x, &temp, &dummy_hum);
 	osSemaphoreRelease(semDataReadyHandle);
-	if (osMutexAcquire(myUartMutexHandle, 100) == osOK) {
+	if (osMutexAcquire(myUartMutexHandle, osWaitForever) == osOK) {
 	    printf("Task 1 in: %lu\n", osKernelGetTickCount());
 	    printf("Data SHT30: Temp: %.1f C\n\n", temp);
 	    osMutexRelease(myUartMutexHandle);
@@ -540,7 +540,7 @@ void StartTask2_soil(void *argument)
 	}
 	HAL_ADC_Stop(&hadc1);
 	osSemaphoreRelease(semDataReadyHandle);
-	if (osMutexAcquire(myUartMutexHandle, 100) == osOK) {
+	if (osMutexAcquire(myUartMutexHandle, osWaitForever) == osOK) {
 	    printf("Task 2 in: %lu\n", osKernelGetTickCount());
 	    printf("Data Soil: %.1f %%\n\n", soil);
 	    osMutexRelease(myUartMutexHandle);
@@ -567,7 +567,7 @@ void StartTask3_Cmd(void *argument)
   {
 	  // Chờ lệnh từ UART (Event-Driven)
 	  if (osSemaphoreAcquire(semUartCmdHandle, osWaitForever) == osOK) {
-
+		  osMutexAcquire(myUartMutexHandle, osWaitForever);
 	      // --- 1. Xử lý lệnh chỉnh tốc độ SHT30 ---
 	      // Cú pháp: RATE_TEMP:xxxx (Ví dụ: RATE_TEMP:2000)
 	      if (strstr(rx_buffer, "T_RATE:") != NULL) {
@@ -605,7 +605,7 @@ void StartTask3_Cmd(void *argument)
 	               printf("ERROR: Unknown command!\r\n");
 	            }
 	      }
-
+	      osMutexRelease(myUartMutexHandle);
 	      // Xóa sạch buffer sau khi xử lý xong
 	      memset(rx_buffer, 0, sizeof(rx_buffer));
 	  }
