@@ -1,0 +1,16 @@
+../Core/Src/main.c:133:5:_write	1
+../Core/Src/main.c:141:7:SoilMoisture_Convert	3
+../Core/Src/main.c:153:5:main	1
+../Core/Src/main.c:265:6:SystemClock_Config	4
+../Core/Src/main.c:312:13:MX_ADC1_Init	3
+../Core/Src/main.c:359:13:MX_I2C1_Init	2
+../Core/Src/main.c:393:13:MX_I2C2_Init	2
+../Core/Src/main.c:427:13:MX_USART1_UART_Init	2
+../Core/Src/main.c:460:13:MX_GPIO_Init	1
+../Core/Src/main.c:478:6:HAL_UART_RxCpltCallback	4
+../Core/Src/main.c:502:6:StartTask1_SHT30	2
+../Core/Src/main.c:530:6:StartTask2_soil	3
+../Core/Src/main.c:561:6:StartTask3_Cmd	7
+../Core/Src/main.c:623:6:StartTask4_LCD	2
+../Core/Src/main.c:652:6:HAL_TIM_PeriodElapsedCallback	2
+../Core/Src/main.c:670:6:Error_Handler	1
