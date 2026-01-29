@@ -7,23 +7,23 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
   1 .text         0000e8ec  08000110  08000110  00001110  2**4
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  2 .rodata       00000734  0800ea00  0800ea00  0000fa00  2**3
+  2 .rodata       00000724  0800ea00  0800ea00  0000fa00  2**3
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  3 .ARM.extab    00000000  0800f134  0800f134  000111e0  2**0
+  3 .ARM.extab    00000000  0800f124  0800f124  000111e0  2**0
                   CONTENTS, READONLY
-  4 .ARM          00000008  0800f134  0800f134  00010134  2**2
+  4 .ARM          00000008  0800f124  0800f124  00010124  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  5 .preinit_array 00000000  0800f13c  0800f13c  000111e0  2**0
+  5 .preinit_array 00000000  0800f12c  0800f12c  000111e0  2**0
                   CONTENTS, ALLOC, LOAD, DATA
-  6 .init_array   00000004  0800f13c  0800f13c  0001013c  2**2
+  6 .init_array   00000004  0800f12c  0800f12c  0001012c  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  7 .fini_array   00000004  0800f140  0800f140  00010140  2**2
+  7 .fini_array   00000004  0800f130  0800f130  00010130  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  8 .data         000001e0  20000000  0800f144  00011000  2**2
+  8 .data         000001e0  20000000  0800f134  00011000  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  9 .bss          0000388c  200001e0  0800f324  000111e0  2**2
+  9 .bss          0000388c  200001e0  0800f314  000111e0  2**2
                   ALLOC
- 10 ._user_heap_stack 00000604  20003a6c  0800f324  00011a6c  2**0
+ 10 ._user_heap_stack 00000604  20003a6c  0800f314  00011a6c  2**0
                   ALLOC
  11 .ARM.attributes 00000029  00000000  00000000  000111e0  2**0
                   CONTENTS, READONLY
@@ -1978,22 +1978,22 @@ int main(void)
  80013e4:	20000024 	.word	0x20000024
  80013e8:	20000372 	.word	0x20000372
  80013ec:	200002d4 	.word	0x200002d4
- 80013f0:	0800ec84 	.word	0x0800ec84
+ 80013f0:	0800ec74 	.word	0x0800ec74
  80013f4:	2000032c 	.word	0x2000032c
- 80013f8:	0800ec94 	.word	0x0800ec94
+ 80013f8:	0800ec84 	.word	0x0800ec84
  80013fc:	20000330 	.word	0x20000330
- 8001400:	0800eca4 	.word	0x0800eca4
+ 8001400:	0800ec94 	.word	0x0800ec94
  8001404:	20000334 	.word	0x20000334
- 8001408:	0800ebf4 	.word	0x0800ebf4
+ 8001408:	0800ebe4 	.word	0x0800ebe4
  800140c:	08001755 	.word	0x08001755
  8001410:	2000031c 	.word	0x2000031c
- 8001414:	0800ec18 	.word	0x0800ec18
+ 8001414:	0800ec08 	.word	0x0800ec08
  8001418:	080017e9 	.word	0x080017e9
  800141c:	20000320 	.word	0x20000320
- 8001420:	0800ec3c 	.word	0x0800ec3c
+ 8001420:	0800ec2c 	.word	0x0800ec2c
  8001424:	0800189d 	.word	0x0800189d
  8001428:	20000324 	.word	0x20000324
- 800142c:	0800ec60 	.word	0x0800ec60
+ 800142c:	0800ec50 	.word	0x0800ec50
  8001430:	0800198d 	.word	0x0800198d
  8001434:	20000328 	.word	0x20000328
 
@@ -2772,7 +2772,7 @@ void StartTask3_Cmd(void *argument)
 
 	      // --- 1. Xử lý lệnh chỉnh tốc độ SHT30 ---
 	      // Cú pháp: RATE_TEMP:xxxx (Ví dụ: RATE_TEMP:2000)
-	      if (strstr(rx_buffer, "RATE_TEMP:") != NULL) {
+	      if (strstr(rx_buffer, "T_RATE:") != NULL) {
  80018bc:	4928      	ldr	r1, [pc, #160]	@ (8001960 <StartTask3_Cmd+0xc4>)
  80018be:	4829      	ldr	r0, [pc, #164]	@ (8001964 <StartTask3_Cmd+0xc8>)
  80018c0:	f009 f97c 	bl	800abbc <strstr>
@@ -2781,7 +2781,7 @@ void StartTask3_Cmd(void *argument)
  80018c8:	d018      	beq.n	80018fc <StartTask3_Cmd+0x60>
 
 	          // Lấy số sau dấu hai chấm bỏ vào biến new_value
-	          sscanf(rx_buffer, "RATE_TEMP:%d", &new_value);
+	          sscanf(rx_buffer, "T_RATE:%d", &new_value);
  80018ca:	f107 030c 	add.w	r3, r7, #12
  80018ce:	461a      	mov	r2, r3
  80018d0:	4925      	ldr	r1, [pc, #148]	@ (8001968 <StartTask3_Cmd+0xcc>)
@@ -2798,7 +2798,7 @@ void StartTask3_Cmd(void *argument)
  80018e0:	461a      	mov	r2, r3
  80018e2:	4b22      	ldr	r3, [pc, #136]	@ (800196c <StartTask3_Cmd+0xd0>)
  80018e4:	601a      	str	r2, [r3, #0]
-	              printf("\r\nOK -> Da doi toc do doc NHIET DO thanh: %lu ms\r\n", cycle_SHT30);
+	              printf("\r\nOK -> Temp sampling rate changed to: %lu ms\r\n", cycle_SHT30);
  80018e6:	4b21      	ldr	r3, [pc, #132]	@ (800196c <StartTask3_Cmd+0xd0>)
  80018e8:	681b      	ldr	r3, [r3, #0]
  80018ea:	4619      	mov	r1, r3
@@ -2806,7 +2806,7 @@ void StartTask3_Cmd(void *argument)
  80018ee:	f008 ff11 	bl	800a714 <iprintf>
  80018f2:	e02c      	b.n	800194e <StartTask3_Cmd+0xb2>
 	          } else {
-	              printf("\r\nERROR -> Toc do qua nhanh! Phai >= 100ms\r\n");
+	              printf("\r\nERROR -> Frequency too high! Must be >= 100ms\r\n");
  80018f4:	481f      	ldr	r0, [pc, #124]	@ (8001974 <StartTask3_Cmd+0xd8>)
  80018f6:	f008 ff75 	bl	800a7e4 <puts>
  80018fa:	e028      	b.n	800194e <StartTask3_Cmd+0xb2>
@@ -2815,7 +2815,7 @@ void StartTask3_Cmd(void *argument)
 
 	      // --- 2. Xử lý lệnh chỉnh tốc độ Soil ---
 	      // Cú pháp: RATE_SOIL:xxxx (Ví dụ: RATE_SOIL:500)
-	      else if (strstr(rx_buffer, "RATE_SOIL:") != NULL) {
+	      else if (strstr(rx_buffer, "S_RATE:") != NULL) {
  80018fc:	491e      	ldr	r1, [pc, #120]	@ (8001978 <StartTask3_Cmd+0xdc>)
  80018fe:	4819      	ldr	r0, [pc, #100]	@ (8001964 <StartTask3_Cmd+0xc8>)
  8001900:	f009 f95c 	bl	800abbc <strstr>
@@ -2823,7 +2823,7 @@ void StartTask3_Cmd(void *argument)
  8001906:	2b00      	cmp	r3, #0
  8001908:	d018      	beq.n	800193c <StartTask3_Cmd+0xa0>
 
-	           sscanf(rx_buffer, "RATE_SOIL:%d", &new_value);
+	           sscanf(rx_buffer, "S_RATE:%d", &new_value);
  800190a:	f107 030c 	add.w	r3, r7, #12
  800190e:	461a      	mov	r2, r3
  8001910:	491a      	ldr	r1, [pc, #104]	@ (800197c <StartTask3_Cmd+0xe0>)
@@ -2839,7 +2839,7 @@ void StartTask3_Cmd(void *argument)
  8001920:	461a      	mov	r2, r3
  8001922:	4b17      	ldr	r3, [pc, #92]	@ (8001980 <StartTask3_Cmd+0xe4>)
  8001924:	601a      	str	r2, [r3, #0]
-	               printf("\r\nOK -> Da doi toc do doc DAT thanh: %lu ms\r\n", cycle_Soil);
+	               printf("\r\nOK -> Soil sampling rate changed to: %lu ms\r\n", cycle_Soil);
  8001926:	4b16      	ldr	r3, [pc, #88]	@ (8001980 <StartTask3_Cmd+0xe4>)
  8001928:	681b      	ldr	r3, [r3, #0]
  800192a:	4619      	mov	r1, r3
@@ -2847,7 +2847,7 @@ void StartTask3_Cmd(void *argument)
  800192e:	f008 fef1 	bl	800a714 <iprintf>
  8001932:	e00c      	b.n	800194e <StartTask3_Cmd+0xb2>
 	           } else {
-	               printf("\r\nERROR -> Toc do qua nhanh! Phai >= 100ms\r\n");
+	               printf("\r\nERROR -> Frequency too high! Must be >= 100ms\r\n");
  8001934:	480f      	ldr	r0, [pc, #60]	@ (8001974 <StartTask3_Cmd+0xd8>)
  8001936:	f008 ff55 	bl	800a7e4 <puts>
  800193a:	e008      	b.n	800194e <StartTask3_Cmd+0xb2>
@@ -2862,7 +2862,7 @@ void StartTask3_Cmd(void *argument)
  8001942:	4603      	mov	r3, r0
  8001944:	2b01      	cmp	r3, #1
  8001946:	d902      	bls.n	800194e <StartTask3_Cmd+0xb2>
-	               printf("ERROR: Khong hieu lenh nay!\r\n");
+	               printf("ERROR: Unknown command!\r\n");
  8001948:	480f      	ldr	r0, [pc, #60]	@ (8001988 <StartTask3_Cmd+0xec>)
  800194a:	f008 ff4b 	bl	800a7e4 <puts>
 	            }
@@ -2880,15 +2880,15 @@ void StartTask3_Cmd(void *argument)
  800195c:	20000334 	.word	0x20000334
  8001960:	0800eac0 	.word	0x0800eac0
  8001964:	20000340 	.word	0x20000340
- 8001968:	0800eacc 	.word	0x0800eacc
+ 8001968:	0800eac8 	.word	0x0800eac8
  800196c:	20000000 	.word	0x20000000
- 8001970:	0800eadc 	.word	0x0800eadc
- 8001974:	0800eb10 	.word	0x0800eb10
- 8001978:	0800eb3c 	.word	0x0800eb3c
- 800197c:	0800eb48 	.word	0x0800eb48
+ 8001970:	0800ead4 	.word	0x0800ead4
+ 8001974:	0800eb04 	.word	0x0800eb04
+ 8001978:	0800eb38 	.word	0x0800eb38
+ 800197c:	0800eb40 	.word	0x0800eb40
  8001980:	20000004 	.word	0x20000004
- 8001984:	0800eb58 	.word	0x0800eb58
- 8001988:	0800eb88 	.word	0x0800eb88
+ 8001984:	0800eb4c 	.word	0x0800eb4c
+ 8001988:	0800eb7c 	.word	0x0800eb7c
 
 0800198c <StartTask4_LCD>:
 * @param argument: Not used
@@ -2961,10 +2961,10 @@ void StartTask4_LCD(void *argument)
  8001a06:	bf00      	nop
  8001a08:	20000330 	.word	0x20000330
  8001a0c:	20000338 	.word	0x20000338
- 8001a10:	0800eba8 	.word	0x0800eba8
+ 8001a10:	0800eb98 	.word	0x0800eb98
  8001a14:	2000022c 	.word	0x2000022c
  8001a18:	2000033c 	.word	0x2000033c
- 8001a1c:	0800ebbc 	.word	0x0800ebbc
+ 8001a1c:	0800ebac 	.word	0x0800ebac
 
 08001a20 <HAL_TIM_PeriodElapsedCallback>:
   * a global variable "uwTick" used as application time base.
@@ -4406,7 +4406,7 @@ LoopFillZerobss:
   ldr r1, =_edata
  8002184:	200001e0 	.word	0x200001e0
   ldr r2, =_sidata
- 8002188:	0800f144 	.word	0x0800f144
+ 8002188:	0800f134 	.word	0x0800f134
   ldr r2, =_sbss
  800218c:	200001e0 	.word	0x200001e0
   ldr r4, =_ebss
@@ -11281,7 +11281,7 @@ if (((RCC_ClkInitStruct->ClockType) & RCC_CLOCKTYPE_PCLK1) == RCC_CLOCKTYPE_PCLK
  8004882:	bf00      	nop
  8004884:	40022000 	.word	0x40022000
  8004888:	40021000 	.word	0x40021000
- 800488c:	0800ecb4 	.word	0x0800ecb4
+ 800488c:	0800eca4 	.word	0x0800eca4
  8004890:	20000008 	.word	0x20000008
  8004894:	2000000c 	.word	0x2000000c
 
@@ -11416,8 +11416,8 @@ uint32_t HAL_RCC_GetSysClockFreq(void)
  800492a:	bf00      	nop
  800492c:	40021000 	.word	0x40021000
  8004930:	007a1200 	.word	0x007a1200
- 8004934:	0800eccc 	.word	0x0800eccc
- 8004938:	0800ecdc 	.word	0x0800ecdc
+ 8004934:	0800ecbc 	.word	0x0800ecbc
+ 8004938:	0800eccc 	.word	0x0800eccc
  800493c:	003d0900 	.word	0x003d0900
 
 08004940 <HAL_RCC_GetHCLKFreq>:
@@ -11463,7 +11463,7 @@ uint32_t HAL_RCC_GetPCLK1Freq(void)
  8004970:	4618      	mov	r0, r3
  8004972:	bd80      	pop	{r7, pc}
  8004974:	40021000 	.word	0x40021000
- 8004978:	0800ecc4 	.word	0x0800ecc4
+ 8004978:	0800ecb4 	.word	0x0800ecb4
 
 0800497c <HAL_RCC_GetPCLK2Freq>:
   * @note   Each time PCLK2 changes, this function must be called to update the
@@ -11489,7 +11489,7 @@ uint32_t HAL_RCC_GetPCLK2Freq(void)
  8004998:	4618      	mov	r0, r3
  800499a:	bd80      	pop	{r7, pc}
  800499c:	40021000 	.word	0x40021000
- 80049a0:	0800ecc4 	.word	0x0800ecc4
+ 80049a0:	0800ecb4 	.word	0x0800ecb4
 
 080049a4 <HAL_RCC_GetClockConfig>:
   * contains the current clock configuration.
@@ -12073,8 +12073,8 @@ uint32_t HAL_RCCEx_GetPeriphCLKFreq(uint32_t PeriphClk)
  8004cfc:	bd80      	pop	{r7, pc}
  8004cfe:	bf00      	nop
  8004d00:	40021000 	.word	0x40021000
- 8004d04:	0800ece0 	.word	0x0800ece0
- 8004d08:	0800ecf0 	.word	0x0800ecf0
+ 8004d04:	0800ecd0 	.word	0x0800ecd0
+ 8004d08:	0800ece0 	.word	0x0800ece0
  8004d0c:	007a1200 	.word	0x007a1200
  8004d10:	003d0900 	.word	0x003d0900
  8004d14:	aaaaaaab 	.word	0xaaaaaaab
@@ -21382,7 +21382,7 @@ BaseType_t xReturn;
  8007e0a:	46bd      	mov	sp, r7
  8007e0c:	bd80      	pop	{r7, pc}
  8007e0e:	bf00      	nop
- 8007e10:	0800ebd0 	.word	0x0800ebd0
+ 8007e10:	0800ebc0 	.word	0x0800ebc0
  8007e14:	08008469 	.word	0x08008469
  8007e18:	20000fc4 	.word	0x20000fc4
  8007e1c:	20000fc0 	.word	0x20000fc0
@@ -23756,7 +23756,7 @@ BaseType_t xReturn = pdFAIL;
  8008a78:	bd80      	pop	{r7, pc}
  8008a7a:	bf00      	nop
  8008a7c:	20000ffc 	.word	0x20000ffc
- 8008a80:	0800ebd8 	.word	0x0800ebd8
+ 8008a80:	0800ebc8 	.word	0x0800ebc8
  8008a84:	08008bc5 	.word	0x08008bc5
  8008a88:	20001000 	.word	0x20001000
 
@@ -24864,7 +24864,7 @@ static void prvCheckForValidListAndQueue( void )
  8009098:	20000ff8 	.word	0x20000ff8
  800909c:	200010a8 	.word	0x200010a8
  80090a0:	20001008 	.word	0x20001008
- 80090a4:	0800ebe0 	.word	0x0800ebe0
+ 80090a4:	0800ebd0 	.word	0x0800ebd0
 
 080090a8 <pxPortInitialiseStack>:
 
@@ -26300,9 +26300,9 @@ uint8_t *puc;
  8009890:	e7f3      	b.n	800987a <__assert_func+0x12>
  8009892:	bf00      	nop
  8009894:	20000024 	.word	0x20000024
- 8009898:	0800ecf2 	.word	0x0800ecf2
- 800989c:	0800ecff 	.word	0x0800ecff
- 80098a0:	0800ed2d 	.word	0x0800ed2d
+ 8009898:	0800ece2 	.word	0x0800ece2
+ 800989c:	0800ecef 	.word	0x0800ecef
+ 80098a0:	0800ed1d 	.word	0x0800ed1d
 
 080098a4 <__cvt>:
  80098a4:	2b00      	cmp	r3, #0
@@ -26726,11 +26726,11 @@ uint8_t *puc;
  8009ca6:	f10a 0a01 	add.w	sl, sl, #1
  8009caa:	e7ee      	b.n	8009c8a <_printf_float+0x2aa>
  8009cac:	7fefffff 	.word	0x7fefffff
- 8009cb0:	0800ed32 	.word	0x0800ed32
- 8009cb4:	0800ed2e 	.word	0x0800ed2e
- 8009cb8:	0800ed3a 	.word	0x0800ed3a
- 8009cbc:	0800ed36 	.word	0x0800ed36
- 8009cc0:	0800ee74 	.word	0x0800ee74
+ 8009cb0:	0800ed22 	.word	0x0800ed22
+ 8009cb4:	0800ed1e 	.word	0x0800ed1e
+ 8009cb8:	0800ed2a 	.word	0x0800ed2a
+ 8009cbc:	0800ed26 	.word	0x0800ed26
+ 8009cc0:	0800ee64 	.word	0x0800ee64
  8009cc4:	6da3      	ldr	r3, [r4, #88]	@ 0x58
  8009cc6:	f8dd a038 	ldr.w	sl, [sp, #56]	@ 0x38
  8009cca:	4553      	cmp	r3, sl
@@ -27209,8 +27209,8 @@ uint8_t *puc;
  800a148:	2500      	movs	r5, #0
  800a14a:	f104 0619 	add.w	r6, r4, #25
  800a14e:	e7f5      	b.n	800a13c <_printf_i+0x220>
- 800a150:	0800ed3e 	.word	0x0800ed3e
- 800a154:	0800ed4f 	.word	0x0800ed4f
+ 800a150:	0800ed2e 	.word	0x0800ed2e
+ 800a154:	0800ed3f 	.word	0x0800ed3f
 
 0800a158 <_scanf_float>:
  800a158:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -27603,8 +27603,8 @@ uint8_t *puc;
  800a55e:	2700      	movs	r7, #0
  800a560:	e633      	b.n	800a1ca <_scanf_float+0x72>
  800a562:	bf00      	nop
- 800a564:	0800ed60 	.word	0x0800ed60
- 800a568:	0800ed2d 	.word	0x0800ed2d
+ 800a564:	0800ed50 	.word	0x0800ed50
+ 800a568:	0800ed1d 	.word	0x0800ed1d
 
 0800a56c <std>:
  800a56c:	2300      	movs	r3, #0
@@ -28438,10 +28438,10 @@ uint8_t *puc;
  800acba:	4798      	blx	r3
  800acbc:	3601      	adds	r6, #1
  800acbe:	e7f2      	b.n	800aca6 <__libc_init_array+0x1e>
- 800acc0:	0800f13c 	.word	0x0800f13c
- 800acc4:	0800f13c 	.word	0x0800f13c
- 800acc8:	0800f13c 	.word	0x0800f13c
- 800accc:	0800f140 	.word	0x0800f140
+ 800acc0:	0800f12c 	.word	0x0800f12c
+ 800acc4:	0800f12c 	.word	0x0800f12c
+ 800acc8:	0800f12c 	.word	0x0800f12c
+ 800accc:	0800f130 	.word	0x0800f130
 
 0800acd0 <__retarget_lock_init_recursive>:
  800acd0:	4770      	bx	lr
@@ -28881,15 +28881,15 @@ uint8_t *puc;
  800b104:	3fc68a28 	.word	0x3fc68a28
  800b108:	509f79fb 	.word	0x509f79fb
  800b10c:	3fd34413 	.word	0x3fd34413
- 800b110:	0800ed72 	.word	0x0800ed72
- 800b114:	0800ed89 	.word	0x0800ed89
+ 800b110:	0800ed62 	.word	0x0800ed62
+ 800b114:	0800ed79 	.word	0x0800ed79
  800b118:	7ff00000 	.word	0x7ff00000
- 800b11c:	0800ed6e 	.word	0x0800ed6e
- 800b120:	0800ee75 	.word	0x0800ee75
- 800b124:	0800ee74 	.word	0x0800ee74
+ 800b11c:	0800ed5e 	.word	0x0800ed5e
+ 800b120:	0800ee65 	.word	0x0800ee65
+ 800b124:	0800ee64 	.word	0x0800ee64
  800b128:	3ff80000 	.word	0x3ff80000
- 800b12c:	0800ef18 	.word	0x0800ef18
- 800b130:	0800ede1 	.word	0x0800ede1
+ 800b12c:	0800ef08 	.word	0x0800ef08
+ 800b130:	0800edd1 	.word	0x0800edd1
  800b134:	f8d9 301c 	ldr.w	r3, [r9, #28]
  800b138:	6018      	str	r0, [r3, #0]
  800b13a:	9b08      	ldr	r3, [sp, #32]
@@ -29118,8 +29118,8 @@ uint8_t *puc;
  800b3b8:	e9cd 0106 	strd	r0, r1, [sp, #24]
  800b3bc:	e7c4      	b.n	800b348 <_dtoa_r+0x510>
  800b3be:	bf00      	nop
- 800b3c0:	0800ef18 	.word	0x0800ef18
- 800b3c4:	0800eef0 	.word	0x0800eef0
+ 800b3c0:	0800ef08 	.word	0x0800ef08
+ 800b3c4:	0800eee0 	.word	0x0800eee0
  800b3c8:	3ff00000 	.word	0x3ff00000
  800b3cc:	40240000 	.word	0x40240000
  800b3d0:	401c0000 	.word	0x401c0000
@@ -29747,8 +29747,8 @@ uint8_t *puc;
  800b9d0:	f000 f966 	bl	800bca0 <__multadd>
  800b9d4:	9003      	str	r0, [sp, #12]
  800b9d6:	e7eb      	b.n	800b9b0 <_dtoa_r+0xb78>
- 800b9d8:	0800ede1 	.word	0x0800ede1
- 800b9dc:	0800ed65 	.word	0x0800ed65
+ 800b9d8:	0800edd1 	.word	0x0800edd1
+ 800b9dc:	0800ed55 	.word	0x0800ed55
 
 0800b9e0 <_free_r>:
  800b9e0:	b538      	push	{r3, r4, r5, lr}
@@ -30030,8 +30030,8 @@ uint8_t *puc;
  800bc4c:	e9c0 3303 	strd	r3, r3, [r0, #12]
  800bc50:	e7f7      	b.n	800bc42 <_Balloc+0x66>
  800bc52:	bf00      	nop
- 800bc54:	0800ed72 	.word	0x0800ed72
- 800bc58:	0800edf2 	.word	0x0800edf2
+ 800bc54:	0800ed62 	.word	0x0800ed62
+ 800bc58:	0800ede2 	.word	0x0800ede2
 
 0800bc5c <_Bfree>:
  800bc5c:	b570      	push	{r4, r5, r6, lr}
@@ -30059,8 +30059,8 @@ uint8_t *puc;
  800bc90:	6021      	str	r1, [r4, #0]
  800bc92:	f843 4022 	str.w	r4, [r3, r2, lsl #2]
  800bc96:	bd70      	pop	{r4, r5, r6, pc}
- 800bc98:	0800ed72 	.word	0x0800ed72
- 800bc9c:	0800edf2 	.word	0x0800edf2
+ 800bc98:	0800ed62 	.word	0x0800ed62
+ 800bc9c:	0800ede2 	.word	0x0800ede2
 
 0800bca0 <__multadd>:
  800bca0:	e92d 41f0 	stmdb	sp!, {r4, r5, r6, r7, r8, lr}
@@ -30114,8 +30114,8 @@ uint8_t *puc;
  800bd1c:	6125      	str	r5, [r4, #16]
  800bd1e:	4620      	mov	r0, r4
  800bd20:	e8bd 81f0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, pc}
- 800bd24:	0800ede1 	.word	0x0800ede1
- 800bd28:	0800edf2 	.word	0x0800edf2
+ 800bd24:	0800edd1 	.word	0x0800edd1
+ 800bd28:	0800ede2 	.word	0x0800ede2
 
 0800bd2c <__s2b>:
  800bd2c:	e92d 43f8 	stmdb	sp!, {r3, r4, r5, r6, r7, r8, r9, lr}
@@ -30176,8 +30176,8 @@ uint8_t *puc;
  800bdb0:	f7ff ff76 	bl	800bca0 <__multadd>
  800bdb4:	e7ee      	b.n	800bd94 <__s2b+0x68>
  800bdb6:	bf00      	nop
- 800bdb8:	0800ede1 	.word	0x0800ede1
- 800bdbc:	0800edf2 	.word	0x0800edf2
+ 800bdb8:	0800edd1 	.word	0x0800edd1
+ 800bdbc:	0800ede2 	.word	0x0800ede2
 
 0800bdc0 <__hi0bits>:
  800bdc0:	4603      	mov	r3, r0
@@ -30267,8 +30267,8 @@ uint8_t *puc;
  800be76:	6103      	str	r3, [r0, #16]
  800be78:	bd10      	pop	{r4, pc}
  800be7a:	bf00      	nop
- 800be7c:	0800ede1 	.word	0x0800ede1
- 800be80:	0800edf2 	.word	0x0800edf2
+ 800be7c:	0800edd1 	.word	0x0800edd1
+ 800be80:	0800ede2 	.word	0x0800ede2
 
 0800be84 <__multiply>:
  800be84:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -30387,8 +30387,8 @@ uint8_t *puc;
  800bfba:	3e01      	subs	r6, #1
  800bfbc:	e7a1      	b.n	800bf02 <__multiply+0x7e>
  800bfbe:	bf00      	nop
- 800bfc0:	0800ede1 	.word	0x0800ede1
- 800bfc4:	0800edf2 	.word	0x0800edf2
+ 800bfc0:	0800edd1 	.word	0x0800edd1
+ 800bfc4:	0800ede2 	.word	0x0800ede2
 
 0800bfc8 <__pow5mult>:
  800bfc8:	e92d 43f8 	stmdb	sp!, {r3, r4, r5, r6, r7, r8, r9, lr}
@@ -30456,9 +30456,9 @@ uint8_t *puc;
  800c068:	4630      	mov	r0, r6
  800c06a:	e8bd 83f8 	ldmia.w	sp!, {r3, r4, r5, r6, r7, r8, r9, pc}
  800c06e:	bf00      	nop
- 800c070:	0800eee4 	.word	0x0800eee4
- 800c074:	0800ed72 	.word	0x0800ed72
- 800c078:	0800edf2 	.word	0x0800edf2
+ 800c070:	0800eed4 	.word	0x0800eed4
+ 800c074:	0800ed62 	.word	0x0800ed62
+ 800c078:	0800ede2 	.word	0x0800ede2
 
 0800c07c <__lshift>:
  800c07c:	e92d 47f0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, lr}
@@ -30537,8 +30537,8 @@ uint8_t *puc;
  800c146:	d8f9      	bhi.n	800c13c <__lshift+0xc0>
  800c148:	e7ea      	b.n	800c120 <__lshift+0xa4>
  800c14a:	bf00      	nop
- 800c14c:	0800ede1 	.word	0x0800ede1
- 800c150:	0800edf2 	.word	0x0800edf2
+ 800c14c:	0800edd1 	.word	0x0800edd1
+ 800c150:	0800ede2 	.word	0x0800ede2
 
 0800c154 <__mcmp>:
  800c154:	4603      	mov	r3, r0
@@ -30674,8 +30674,8 @@ uint8_t *puc;
  800c2a6:	3f01      	subs	r7, #1
  800c2a8:	e7e6      	b.n	800c278 <__mdiff+0xec>
  800c2aa:	bf00      	nop
- 800c2ac:	0800ede1 	.word	0x0800ede1
- 800c2b0:	0800edf2 	.word	0x0800edf2
+ 800c2ac:	0800edd1 	.word	0x0800edd1
+ 800c2b0:	0800ede2 	.word	0x0800ede2
 
 0800c2b4 <__ulp>:
  800c2b4:	4b0e      	ldr	r3, [pc, #56]	@ (800c2f0 <__ulp+0x3c>)
@@ -30822,8 +30822,8 @@ uint8_t *puc;
  800c422:	f7ff fccd 	bl	800bdc0 <__hi0bits>
  800c426:	ebc0 1042 	rsb	r0, r0, r2, lsl #5
  800c42a:	e7e4      	b.n	800c3f6 <__d2b+0x72>
- 800c42c:	0800ede1 	.word	0x0800ede1
- 800c430:	0800edf2 	.word	0x0800edf2
+ 800c42c:	0800edd1 	.word	0x0800edd1
+ 800c430:	0800ede2 	.word	0x0800ede2
 
 0800c434 <__ratio>:
  800c434:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -31225,9 +31225,9 @@ uint8_t *puc;
  800c7e4:	e782      	b.n	800c6ec <_strtod_l+0x18c>
  800c7e6:	f04f 0c01 	mov.w	ip, #1
  800c7ea:	e7f8      	b.n	800c7de <_strtod_l+0x27e>
- 800c7ec:	0800eff4 	.word	0x0800eff4
+ 800c7ec:	0800efe4 	.word	0x0800efe4
  800c7f0:	7ff00000 	.word	0x7ff00000
- 800c7f4:	0800ee4b 	.word	0x0800ee4b
+ 800c7f4:	0800ee3b 	.word	0x0800ee3b
  800c7f8:	9a19      	ldr	r2, [sp, #100]	@ 0x64
  800c7fa:	1c51      	adds	r1, r2, #1
  800c7fc:	9119      	str	r1, [sp, #100]	@ 0x64
@@ -31515,14 +31515,14 @@ uint8_t *puc;
  800cacc:	f04f 0b00 	mov.w	fp, #0
  800cad0:	6013      	str	r3, [r2, #0]
  800cad2:	e76b      	b.n	800c9ac <_strtod_l+0x44c>
- 800cad4:	0800ed3b 	.word	0x0800ed3b
- 800cad8:	0800efe0 	.word	0x0800efe0
- 800cadc:	0800ed33 	.word	0x0800ed33
- 800cae0:	0800ed68 	.word	0x0800ed68
+ 800cad4:	0800ed2b 	.word	0x0800ed2b
+ 800cad8:	0800efd0 	.word	0x0800efd0
+ 800cadc:	0800ed23 	.word	0x0800ed23
+ 800cae0:	0800ed58 	.word	0x0800ed58
  800cae4:	7ff00000 	.word	0x7ff00000
- 800cae8:	0800ed2d 	.word	0x0800ed2d
- 800caec:	0800ef18 	.word	0x0800ef18
- 800caf0:	0800eef0 	.word	0x0800eef0
+ 800cae8:	0800ed1d 	.word	0x0800ed1d
+ 800caec:	0800ef08 	.word	0x0800ef08
+ 800caf0:	0800eee0 	.word	0x0800eee0
  800caf4:	7ca00000 	.word	0x7ca00000
  800caf8:	7fefffff 	.word	0x7fefffff
  800cafc:	f014 0310 	ands.w	r3, r4, #16
@@ -31728,7 +31728,7 @@ uint8_t *puc;
  800cce6:	2800      	cmp	r0, #0
  800cce8:	d1d9      	bne.n	800cc9e <_strtod_l+0x73e>
  800ccea:	e658      	b.n	800c99e <_strtod_l+0x43e>
- 800ccec:	0800f008 	.word	0x0800f008
+ 800ccec:	0800eff8 	.word	0x0800eff8
  800ccf0:	fffffc02 	.word	0xfffffc02
  800ccf4:	2e00      	cmp	r6, #0
  800ccf6:	dd07      	ble.n	800cd08 <_strtod_l+0x7a8>
@@ -32237,7 +32237,7 @@ uint8_t *puc;
  800d204:	d1f6      	bne.n	800d1f4 <_strtol_l.isra.0+0xd8>
  800d206:	f8c8 1000 	str.w	r1, [r8]
  800d20a:	e794      	b.n	800d136 <_strtol_l.isra.0+0x1a>
- 800d20c:	0800f031 	.word	0x0800f031
+ 800d20c:	0800f021 	.word	0x0800f021
 
 0800d210 <_strtol_r>:
  800d210:	f7ff bf84 	b.w	800d11c <_strtol_l.isra.0>
@@ -32517,9 +32517,9 @@ uint8_t *puc;
  800d4a8:	a904      	add	r1, sp, #16
  800d4aa:	f7fc fd37 	bl	8009f1c <_printf_i>
  800d4ae:	e7ed      	b.n	800d48c <_svfiprintf_r+0x1c0>
- 800d4b0:	0800ee4d 	.word	0x0800ee4d
- 800d4b4:	0800ee53 	.word	0x0800ee53
- 800d4b8:	0800ee57 	.word	0x0800ee57
+ 800d4b0:	0800ee3d 	.word	0x0800ee3d
+ 800d4b4:	0800ee43 	.word	0x0800ee43
+ 800d4b8:	0800ee47 	.word	0x0800ee47
  800d4bc:	080099e1 	.word	0x080099e1
  800d4c0:	0800d215 	.word	0x0800d215
 
@@ -32891,8 +32891,8 @@ uint8_t *puc;
  800d836:	e7a9      	b.n	800d78c <__ssvfiscanf_r+0x214>
  800d838:	0800d4c5 	.word	0x0800d4c5
  800d83c:	0800d53f 	.word	0x0800d53f
- 800d840:	0800f031 	.word	0x0800f031
- 800d844:	0800ee53 	.word	0x0800ee53
+ 800d840:	0800f021 	.word	0x0800f021
+ 800d844:	0800ee43 	.word	0x0800ee43
  800d848:	0800a159 	.word	0x0800a159
  800d84c:	89a3      	ldrh	r3, [r4, #12]
  800d84e:	065b      	lsls	r3, r3, #25
@@ -33166,9 +33166,9 @@ uint8_t *puc;
  800dac4:	a904      	add	r1, sp, #16
  800dac6:	f7fc fa29 	bl	8009f1c <_printf_i>
  800daca:	e7e4      	b.n	800da96 <_vfiprintf_r+0x1e6>
- 800dacc:	0800ee4d 	.word	0x0800ee4d
- 800dad0:	0800ee53 	.word	0x0800ee53
- 800dad4:	0800ee57 	.word	0x0800ee57
+ 800dacc:	0800ee3d 	.word	0x0800ee3d
+ 800dad0:	0800ee43 	.word	0x0800ee43
+ 800dad4:	0800ee47 	.word	0x0800ee47
  800dad8:	080099e1 	.word	0x080099e1
  800dadc:	0800d88b 	.word	0x0800d88b
 
@@ -33253,7 +33253,7 @@ uint8_t *puc;
  800db88:	6123      	str	r3, [r4, #16]
  800db8a:	e8bd 83f8 	ldmia.w	sp!, {r3, r4, r5, r6, r7, r8, r9, pc}
  800db8e:	bf00      	nop
- 800db90:	0800f031 	.word	0x0800f031
+ 800db90:	0800f021 	.word	0x0800f021
 
 0800db94 <_scanf_i>:
  800db94:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -33445,10 +33445,10 @@ uint8_t *puc;
  800dd62:	e7eb      	b.n	800dd3c <_scanf_i+0x1a8>
  800dd64:	2001      	movs	r0, #1
  800dd66:	e7f2      	b.n	800dd4e <_scanf_i+0x1ba>
- 800dd68:	0800ebe8 	.word	0x0800ebe8
+ 800dd68:	0800ebd8 	.word	0x0800ebd8
  800dd6c:	0800d211 	.word	0x0800d211
  800dd70:	0800e9b5 	.word	0x0800e9b5
- 800dd74:	0800ee6e 	.word	0x0800ee6e
+ 800dd74:	0800ee5e 	.word	0x0800ee5e
 
 0800dd78 <__sflush_r>:
  800dd78:	f9b1 200c 	ldrsh.w	r2, [r1, #12]
@@ -34333,9 +34333,9 @@ uint8_t *puc;
  800e55e:	2b00      	cmp	r3, #0
  800e560:	d1dd      	bne.n	800e51e <__gethex+0x26a>
  800e562:	e7ee      	b.n	800e542 <__gethex+0x28e>
- 800e564:	0800ee4b 	.word	0x0800ee4b
- 800e568:	0800ede1 	.word	0x0800ede1
- 800e56c:	0800ee81 	.word	0x0800ee81
+ 800e564:	0800ee3b 	.word	0x0800ee3b
+ 800e568:	0800edd1 	.word	0x0800edd1
+ 800e56c:	0800ee71 	.word	0x0800ee71
  800e570:	1e6f      	subs	r7, r5, #1
  800e572:	f1b9 0f00 	cmp.w	r9, #0
  800e576:	d130      	bne.n	800e5da <__gethex+0x326>
@@ -34470,7 +34470,7 @@ uint8_t *puc;
  800e6ca:	42b0      	cmp	r0, r6
  800e6cc:	dbe7      	blt.n	800e69e <__gethex+0x3ea>
  800e6ce:	e7f0      	b.n	800e6b2 <__gethex+0x3fe>
- 800e6d0:	0800ede1 	.word	0x0800ede1
+ 800e6d0:	0800edd1 	.word	0x0800edd1
 
 0800e6d4 <L_shift>:
  800e6d4:	f1c2 0208 	rsb	r2, r2, #8
@@ -34784,7 +34784,7 @@ uint8_t *puc;
  800e9aa:	1e69      	subs	r1, r5, #1
  800e9ac:	6011      	str	r1, [r2, #0]
  800e9ae:	e7f5      	b.n	800e99c <_strtoul_l.isra.0+0xc4>
- 800e9b0:	0800f031 	.word	0x0800f031
+ 800e9b0:	0800f021 	.word	0x0800f021
 
 0800e9b4 <_strtoul_r>:
  800e9b4:	f7ff bf90 	b.w	800e8d8 <_strtoul_l.isra.0>

@@ -570,31 +570,31 @@ void StartTask3_Cmd(void *argument)
 
 	      // --- 1. Xử lý lệnh chỉnh tốc độ SHT30 ---
 	      // Cú pháp: RATE_TEMP:xxxx (Ví dụ: RATE_TEMP:2000)
-	      if (strstr(rx_buffer, "RATE_TEMP:") != NULL) {
+	      if (strstr(rx_buffer, "T_RATE:") != NULL) {
 
 	          // Lấy số sau dấu hai chấm bỏ vào biến new_value
-	          sscanf(rx_buffer, "RATE_TEMP:%d", &new_value);
+	          sscanf(rx_buffer, "T_RATE:%d", &new_value);
 
 	          // Bảo vệ: Không cho đặt nhanh quá (nhỏ hơn 100ms) gây treo
 	          if (new_value >= 100) {
 	              cycle_SHT30 = new_value;
-	              printf("\r\nOK -> Da doi toc do doc NHIET DO thanh: %lu ms\r\n", cycle_SHT30);
+	              printf("\r\nOK -> Temp sampling rate changed to: %lu ms\r\n", cycle_SHT30);
 	          } else {
-	              printf("\r\nERROR -> Toc do qua nhanh! Phai >= 100ms\r\n");
+	              printf("\r\nERROR -> Frequency too high! Must be >= 100ms\r\n");
 	          }
 	      }
 
 	      // --- 2. Xử lý lệnh chỉnh tốc độ Soil ---
 	      // Cú pháp: RATE_SOIL:xxxx (Ví dụ: RATE_SOIL:500)
-	      else if (strstr(rx_buffer, "RATE_SOIL:") != NULL) {
+	      else if (strstr(rx_buffer, "S_RATE:") != NULL) {
 
-	           sscanf(rx_buffer, "RATE_SOIL:%d", &new_value);
+	           sscanf(rx_buffer, "S_RATE:%d", &new_value);
 
 	           if (new_value >= 100) {
 	               cycle_Soil = new_value;
-	               printf("\r\nOK -> Da doi toc do doc DAT thanh: %lu ms\r\n", cycle_Soil);
+	               printf("\r\nOK -> Soil sampling rate changed to: %lu ms\r\n", cycle_Soil);
 	           } else {
-	               printf("\r\nERROR -> Toc do qua nhanh! Phai >= 100ms\r\n");
+	               printf("\r\nERROR -> Frequency too high! Must be >= 100ms\r\n");
 	           }
 	      }
 
@@ -602,7 +602,7 @@ void StartTask3_Cmd(void *argument)
 	      else {
 	            // Chỉ báo lỗi nếu chuỗi không rỗng (tránh in rác)
 	            if(strlen(rx_buffer) > 1) {
-	               printf("ERROR: Khong hieu lenh nay!\r\n");
+	               printf("ERROR: Unknown command!\r\n");
 	            }
 	      }
 
