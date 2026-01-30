@@ -35,12 +35,11 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define RX_BUFFER_SIZE 50
+#define MAJOR_CYCLE_MS      2000
+#define FRAME_DURATION_MS   100
+#define TOTAL_FRAMES        20
+#define RX_BUFFER_SIZE      50
 
-// --- CẤU HÌNH LẬP LỊCH ---
-#define HYPERPERIOD_MS  500
-#define FRAME_DURATION  50  // Chu kỳ khung cơ sở (50ms)
-#define FRAMES_PER_CYCLE (HYPERPERIOD_MS / FRAME_DURATION) // = 10 Frames
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -58,19 +57,15 @@ UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 
-// --- Biến Cảm biến ---
 sht3x_handle_t sht3x;
-float temp = 0.0f, hum = 0.0f;
-float soil_vol = 0.0f;
+float temp = 0.0f;
+float soil = 0.0f;
 
-// --- Biến UART ---
-uint8_t rx_byte;
+uint8_t rx_byte_poll;
 char rx_buffer[RX_BUFFER_SIZE];
 uint8_t rx_indx = 0;
-char TxBuffer[100];
+bool is_system_running = false;
 
-// --- Biến LCD ---
-char LcdBuf[20];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -82,59 +77,82 @@ static void MX_I2C2_Init(void);
 static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
 // --- KHAI BÁO TÊN TASK ---
-void T1_Process_Command(void);
-void T2_Read_Sensors(void);
-void T3_UART_Transmit(void);
-void T4_LCD_Update(void);
+void Task_SHT30(void);
+void Task_Soil(void);
+void Task_Cmd(void);
+void Task_LCD(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-float SoilMoisture_Convert(uint16_t adc_value)
-{
+#ifdef __GNUC__
+int _write(int file, char *ptr, int len) {
+    HAL_UART_Transmit(&huart1, (uint8_t*)ptr, len, 100); return len;
+}
+#endif
+
+float SoilMoisture_Convert(uint16_t adc_value) {
     if (adc_value > 2500) adc_value = 2500;
     if (adc_value < 830)  adc_value = 830;
     return (float)(2500 - adc_value) * 100.0f / (2500 - 830);
 }
 
-// --- ĐỊNH NGHĨA CÁC TASK (Dùng Float trực tiếp) ---
-
-// T1: Xử lý lệnh (Chu kỳ 50ms)
-void T1_Process_Command() {
-    if (strstr(rx_buffer, "TIME:") != NULL) {
-        HAL_UART_Transmit(&huart1, (uint8_t*)" -> CMD OK\r\n", 12, 10);
-        memset(rx_buffer, 0, RX_BUFFER_SIZE);
-        rx_indx = 0;
-    }
+/* 1. Task SHT30 */
+void Task_SHT30(void) {
+    uint32_t t_start = HAL_GetTick(); // Bắt đầu đo thời gian thực thi
+    float dummy;
+    sht3x_read_temperature_and_humidity(&sht3x, &temp, &dummy);
+    printf("Task 1 in: %lu\r\n", t_start);
+    printf("Data SHT30: Temp: %.1f C\r\n", temp);
+    uint32_t t_exec = HAL_GetTick() - t_start;
+    printf("[EXEC] Task_SHT30 time: %lu ms\r\n\r\n", t_exec);
 }
 
-// T2: Đọc cảm biến (Chu kỳ 50ms)
-void T2_Read_Sensors() {
-    sht3x_read_temperature_and_humidity(&sht3x, &temp, &hum);
-
+/* 2. Task Soil */
+void Task_Soil(void) {
+    uint32_t t_start = HAL_GetTick();
     HAL_ADC_Start(&hadc1);
     if (HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK)
-        soil_vol = SoilMoisture_Convert(HAL_ADC_GetValue(&hadc1));
+        soil = SoilMoisture_Convert(HAL_ADC_GetValue(&hadc1));
     HAL_ADC_Stop(&hadc1);
+    printf("Task 2 in: %lu\r\n", t_start);
+    printf("Data Soil: %.1f %%\r\n", soil);
+    uint32_t t_exec = HAL_GetTick() - t_start;
+    printf("[EXEC] Task_Soil time: %lu ms\r\n\r\n", t_exec);
 }
 
-// T3: Gửi UART (Chu kỳ 50ms)
-void T3_UART_Transmit() {
-    // Dùng %.1f gọn gàng nhờ đã bật float trong setting
-    int len = snprintf(TxBuffer, 64, "T=%.1f, S=%.1f\r\n", temp, soil_vol);
-    HAL_UART_Transmit(&huart1, (uint8_t*)TxBuffer, len, 20);
-}
-
-// T4: Hiển thị LCD (Chu kỳ 250ms -> Chạy ở Frame 0 và 5)
-void T4_LCD_Update() {
-    // Dùng %.1f gọn gàng
+/* 3. Task LCD */
+void Task_LCD(void) {
+    uint32_t t_start = HAL_GetTick();
+    char LcdBuf[20];
     snprintf(LcdBuf, 20, "Temp: %.1f C    ", temp);
-    lcd_gotoxy(&hi2c1, 0, 0);
-    lcd_puts(&hi2c1, LcdBuf);
+    lcd_gotoxy(&hi2c1, 0, 0); lcd_puts(&hi2c1, LcdBuf);
+    snprintf(LcdBuf, 20, "Soil: %.1f %%    ", soil);
+    lcd_gotoxy(&hi2c1, 0, 1); lcd_puts(&hi2c1, LcdBuf);
+    printf("Task 3 in: %lu\r\n", t_start); // Thêm dòng này cho đồng bộ
+    uint32_t t_exec = HAL_GetTick() - t_start;
+    printf("[EXEC] Task_LCD time: %lu ms\r\n\r\n", t_exec);
+}
 
-    snprintf(LcdBuf, 20, "Soil: %.1f %%    ", soil_vol);
-    lcd_gotoxy(&hi2c1, 0, 1);
-    lcd_puts(&hi2c1, LcdBuf);
+/* Task UART Polling (Luôn chạy nền) */
+void Task_UART_Poll(void) {
+    while (HAL_UART_Receive(&huart1, &rx_byte_poll, 1, 0) == HAL_OK) {
+        if (rx_byte_poll == '0') {
+            if (is_system_running == false) {
+                is_system_running = true;
+                printf("\r\n>>> CMD: 0 -> START <<<\r\n");
+                lcd_clear(&hi2c1);
+            }
+        }
+        else if (rx_byte_poll == '1') {
+            if (is_system_running == true) {
+                is_system_running = false;
+                printf("\r\n>>> CMD: 1 -> STOP <<<\r\n");
+                lcd_clear(&hi2c1);
+                lcd_puts(&hi2c1, "STOPPED");
+            }
+        }
+    }
 }
 /* USER CODE END 0 */
 
@@ -174,55 +192,62 @@ int main(void)
   /* USER CODE BEGIN 2 */
   sht3x.i2c_handle = &hi2c2;
   sht3x.device_address = SHT3X_I2C_DEVICE_ADDRESS_ADDR_PIN_LOW;
+  sht3x_init(&sht3x);
 
   lcd_init(&hi2c1);          // Khởi tạo LCD qua I2C1
-  lcd_gotoxy(&hi2c1, 0, 0);  // Di chuyển đến Cột 0, Dòng 0
   lcd_puts(&hi2c1, "System Init...");
   HAL_Delay(1000);
-  lcd_clear(&hi2c1);         // Xóa màn hình
+  lcd_clear(&hi2c1);
+  printf("Init Done. Send '0' to start, '1' to stop.\r\n");
 
-  HAL_UART_Receive_IT(&huart1, &rx_byte, 1);
-
-  // --- SCHEDULER INIT ---
-  uint32_t next_wake_time = HAL_GetTick();
-  uint8_t frame_index = 0; // 0 đến 9
+  uint32_t t_frame_start = 0;
+  uint32_t t_exec = 0;
+  uint32_t frame_idx = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  // ===============================================
-	        // 1. TÁC VỤ CƠ SỞ (Chạy mọi Frame - 50ms)
-	        // ===============================================
-	        T1_Process_Command(); // T1: Lệnh
-	        T2_Read_Sensors();    // T2: Cảm biến
-	        T3_UART_Transmit();   // T3: Gửi UART
-
-	        // ===============================================
-	        // 2. TÁC VỤ THEO KHUNG (Scheduled Tasks)
-	        // ===============================================
-
-	        // T4: LCD (250ms) -> Chạy ở Frame 0 và Frame 5
-	        if (frame_index == 0 || frame_index == 5) {
-	            T4_LCD_Update();
-	        }
-
-	        // ===============================================
-	        // 3. QUẢN LÝ THỜI GIAN
-	        // ===============================================
-	        next_wake_time += FRAME_DURATION; // +50ms
-	        frame_index++;
-	        if (frame_index >= FRAMES_PER_CYCLE) {
-	            frame_index = 0;
-	        }
-
-	        while (HAL_GetTick() < next_wake_time) {
-	             HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
-	        }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+	  t_frame_start = HAL_GetTick();
+	  /* 2. POLLING UART (Chạy mọi lúc) */
+	  Task_UART_Poll();
+	  /* 3. LỊCH TRÌNH CYCLIC EXECUTIVE (Chỉ chạy khi START) */
+	  if (is_system_running) {
+	      switch (frame_idx) {
+	          case 0:
+	               Task_SHT30(); // Chạy SHT30 ở Frame 0
+	               break;
+	          case 5:
+	               Task_Soil();  // Chạy Soil ở Frame 5
+	               break;
+	          case 10:
+	               Task_SHT30(); // Chạy lại SHT30 ở Frame 10
+	               break;
+	          case 15:
+	               Task_LCD();   // Chạy LCD ở Frame 15
+	               break;
+	          }
+	   }
+	   /* 4. NGỦ BÙ (SLEEP) */
+	   t_exec = HAL_GetTick() - t_frame_start;
+	   if (t_exec > FRAME_DURATION_MS) {
+	       printf("ERROR: Overrun Frame %lu (%lu ms)\r\n", frame_idx, t_exec);
+	   } else {
+	      uint32_t target_time = t_frame_start + FRAME_DURATION_MS;
+	      while (HAL_GetTick() < target_time) {
+	             HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+	      }
+	   }
+	   /* 5. NEXT FRAME */
+	   if (is_system_running) {
+	       frame_idx++;
+	       if (frame_idx >= TOTAL_FRAMES) frame_idx = 0;
+	   }
   }
   /* USER CODE END 3 */
 }
@@ -443,19 +468,8 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-  if (huart->Instance == USART1)
-  {
-    if (rx_byte == '!') {
-        rx_buffer[rx_indx] = 0;
-        rx_indx = 0;
-    } else {
-        if (rx_indx < RX_BUFFER_SIZE - 1) rx_buffer[rx_indx++] = rx_byte;
-    }
-    HAL_UART_Receive_IT(&huart1, &rx_byte, 1);
-  }
-}
+
+
 /* USER CODE END 4 */
 
 /**

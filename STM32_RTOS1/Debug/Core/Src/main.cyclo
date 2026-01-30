@@ -11,6 +11,6 @@
 ../Core/Src/main.c:502:6:StartTask1_SHT30	2
 ../Core/Src/main.c:530:6:StartTask2_soil	3
 ../Core/Src/main.c:561:6:StartTask3_Cmd	7
-../Core/Src/main.c:623:6:StartTask4_LCD	2
-../Core/Src/main.c:652:6:HAL_TIM_PeriodElapsedCallback	2
-../Core/Src/main.c:670:6:Error_Handler	1
+../Core/Src/main.c:619:6:StartTask4_LCD	2
+../Core/Src/main.c:648:6:HAL_TIM_PeriodElapsedCallback	2
+../Core/Src/main.c:666:6:Error_Handler	1

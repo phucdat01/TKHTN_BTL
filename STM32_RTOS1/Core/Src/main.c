@@ -107,7 +107,7 @@ static uint8_t rx_byte;
 sht3x_handle_t sht3x;
 
 uint32_t cycle_SHT30 = 1000;
-uint32_t cycle_Soil  = 1000;
+uint32_t cycle_Soil  = 2000;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -183,7 +183,7 @@ int main(void)
   sht3x.i2c_handle = &hi2c2;
   sht3x.device_address = SHT3X_I2C_DEVICE_ADDRESS_ADDR_PIN_LOW;
   lcd_init(&hi2c1);
-  lcd_puts(&hi2c1, "System Booting...");
+  lcd_puts(&hi2c1, "System Init...");
   HAL_Delay(1000);
   lcd_clear(&hi2c1);
 
@@ -570,31 +570,27 @@ void StartTask3_Cmd(void *argument)
 		  osMutexAcquire(myUartMutexHandle, osWaitForever);
 	      // --- 1. Xử lý lệnh chỉnh tốc độ SHT30 ---
 	      // Cú pháp: RATE_TEMP:xxxx (Ví dụ: RATE_TEMP:2000)
-	      if (strstr(rx_buffer, "T_RATE:") != NULL) {
+	      if (strstr(rx_buffer, "T:") != NULL) {
 
 	          // Lấy số sau dấu hai chấm bỏ vào biến new_value
-	          sscanf(rx_buffer, "T_RATE:%d", &new_value);
+	          sscanf(rx_buffer, "T:%d", &new_value);
 
 	          // Bảo vệ: Không cho đặt nhanh quá (nhỏ hơn 100ms) gây treo
 	          if (new_value >= 100) {
 	              cycle_SHT30 = new_value;
 	              printf("\r\nOK -> Temp sampling rate changed to: %lu ms\r\n", cycle_SHT30);
-	          } else {
-	              printf("\r\nERROR -> Frequency too high! Must be >= 100ms\r\n");
 	          }
 	      }
 
 	      // --- 2. Xử lý lệnh chỉnh tốc độ Soil ---
 	      // Cú pháp: RATE_SOIL:xxxx (Ví dụ: RATE_SOIL:500)
-	      else if (strstr(rx_buffer, "S_RATE:") != NULL) {
+	      else if (strstr(rx_buffer, "S:") != NULL) {
 
-	           sscanf(rx_buffer, "S_RATE:%d", &new_value);
+	           sscanf(rx_buffer, "S:%d", &new_value);
 
 	           if (new_value >= 100) {
 	               cycle_Soil = new_value;
 	               printf("\r\nOK -> Soil sampling rate changed to: %lu ms\r\n", cycle_Soil);
-	           } else {
-	               printf("\r\nERROR -> Frequency too high! Must be >= 100ms\r\n");
 	           }
 	      }
 
