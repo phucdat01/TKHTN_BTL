@@ -35,9 +35,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define MAJOR_CYCLE_MS      2000
 #define FRAME_DURATION_MS   100
-#define TOTAL_FRAMES        20
 #define RX_BUFFER_SIZE      50
 
 /* USER CODE END PD */
@@ -53,6 +51,8 @@ ADC_HandleTypeDef hadc1;
 I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c2;
 
+TIM_HandleTypeDef htim2;
+
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
@@ -61,11 +61,19 @@ sht3x_handle_t sht3x;
 float temp = 0.0f;
 float soil = 0.0f;
 
-uint8_t rx_byte_poll;
-char rx_buffer[RX_BUFFER_SIZE];
+uint32_t frame_idx = 0;
+
+uint32_t major_cycle_ms = 2000; // Mặc định 2000ms
+uint32_t total_frames = 20;     // Mặc định 20 frames
+
+uint8_t rx_byte_irq;
+char cmd_buffer[RX_BUFFER_SIZE];
 uint8_t rx_indx = 0;
 bool is_system_running = false;
 
+volatile uint8_t timer_flag = 0;
+volatile uint8_t cmd_idx = 0;
+volatile uint8_t cmd_flag = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -75,6 +83,7 @@ static void MX_I2C1_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_I2C2_Init(void);
 static void MX_USART1_UART_Init(void);
+static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
 // --- KHAI BÁO TÊN TASK ---
 void Task_SHT30(void);
@@ -92,9 +101,9 @@ int _write(int file, char *ptr, int len) {
 #endif
 
 float SoilMoisture_Convert(uint16_t adc_value) {
-    if (adc_value > 2500) adc_value = 2500;
-    if (adc_value < 830)  adc_value = 830;
-    return (float)(2500 - adc_value) * 100.0f / (2500 - 830);
+    if (adc_value > 2370) adc_value = 2370;
+    if (adc_value < 470)  adc_value = 470;
+    return (float)(2370 - adc_value) * 100.0f / (2370 - 470);
 }
 
 /* 1. Task SHT30 */
@@ -134,25 +143,42 @@ void Task_LCD(void) {
     printf("[EXEC] Task_LCD time: %lu ms\r\n\r\n", t_exec);
 }
 
-/* Task UART Polling (Luôn chạy nền) */
-void Task_UART_Poll(void) {
-    while (HAL_UART_Receive(&huart1, &rx_byte_poll, 1, 0) == HAL_OK) {
-        if (rx_byte_poll == '0') {
-            if (is_system_running == false) {
-                is_system_running = true;
-                printf("\r\n>>> CMD: 0 -> START <<<\r\n");
-                lcd_clear(&hi2c1);
-            }
-        }
-        else if (rx_byte_poll == '1') {
-            if (is_system_running == true) {
-                is_system_running = false;
-                printf("\r\n>>> CMD: 1 -> STOP <<<\r\n");
-                lcd_clear(&hi2c1);
-                lcd_puts(&hi2c1, "STOPPED");
-            }
+void Process_Command(void) {
+    // 1. START
+    if (cmd_buffer[0] == '0') {
+        if (!is_system_running) {
+            is_system_running = true;
+            printf("\r\n>>> SYSTEM STARTED <<<\r\n");
+            lcd_clear(&hi2c1);
         }
     }
+    // 2. STOP
+    else if (cmd_buffer[0] == '1') {
+        if (is_system_running) {
+            is_system_running = false;
+            printf("\r\n>>> SYSTEM STOPPED <<<\r\n");
+            lcd_clear(&hi2c1);
+            lcd_puts(&hi2c1, "STOPPED");
+        }
+    }
+    // 3. CHANGE CYCLE (C:xxxx)
+    else if (cmd_buffer[0] == 'C' && cmd_buffer[1] == ':') {
+        int new_cycle = atoi(&cmd_buffer[2]);
+        if (new_cycle >= 1600) {
+            major_cycle_ms = new_cycle;
+            total_frames = major_cycle_ms / FRAME_DURATION_MS;
+            frame_idx = 0; // Reset vòng lặp
+            printf("\r\n>>> OK: New Cycle = %lu ms (%lu frames) <<<\r\n", major_cycle_ms, total_frames);
+        } else {
+            printf("\r\n>>> ERROR: Min cycle is 1600ms <<<\r\n");
+        }
+    }
+    else {
+        printf("\r\n>>> Unknown Command: %s <<<\r\n", cmd_buffer);
+    }
+
+    // Xóa buffer
+    memset(cmd_buffer, 0, RX_BUFFER_SIZE);
 }
 /* USER CODE END 0 */
 
@@ -189,6 +215,7 @@ int main(void)
   MX_ADC1_Init();
   MX_I2C2_Init();
   MX_USART1_UART_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   sht3x.i2c_handle = &hi2c2;
   sht3x.device_address = SHT3X_I2C_DEVICE_ADDRESS_ADDR_PIN_LOW;
@@ -200,9 +227,8 @@ int main(void)
   lcd_clear(&hi2c1);
   printf("Init Done. Send '0' to start, '1' to stop.\r\n");
 
-  uint32_t t_frame_start = 0;
-  uint32_t t_exec = 0;
-  uint32_t frame_idx = 0;
+  HAL_UART_Receive_IT(&huart1, &rx_byte_irq, 1);
+  HAL_TIM_Base_Start_IT(&htim2);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -212,41 +238,30 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	   if (timer_flag == 1) {
+	       timer_flag = 0;
 
-	  t_frame_start = HAL_GetTick();
-	  /* 2. POLLING UART (Chạy mọi lúc) */
-	  Task_UART_Poll();
-	  /* 3. LỊCH TRÌNH CYCLIC EXECUTIVE (Chỉ chạy khi START) */
-	  if (is_system_running) {
-	      switch (frame_idx) {
-	          case 0:
-	               Task_SHT30(); // Chạy SHT30 ở Frame 0
-	               break;
-	          case 5:
-	               Task_Soil();  // Chạy Soil ở Frame 5
-	               break;
-	          case 10:
-	               Task_SHT30(); // Chạy lại SHT30 ở Frame 10
-	               break;
-	          case 15:
-	               Task_LCD();   // Chạy LCD ở Frame 15
-	               break;
-	          }
-	   }
-	   /* 4. NGỦ BÙ (SLEEP) */
-	   t_exec = HAL_GetTick() - t_frame_start;
-	   if (t_exec > FRAME_DURATION_MS) {
-	       printf("ERROR: Overrun Frame %lu (%lu ms)\r\n", frame_idx, t_exec);
-	   } else {
-	      uint32_t target_time = t_frame_start + FRAME_DURATION_MS;
-	      while (HAL_GetTick() < target_time) {
-	             HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
-	      }
-	   }
-	   /* 5. NEXT FRAME */
-	   if (is_system_running) {
-	       frame_idx++;
-	       if (frame_idx >= TOTAL_FRAMES) frame_idx = 0;
+	       if (cmd_flag == 1) {
+	           cmd_flag = 0;
+	           Process_Command();
+	       }
+
+	       if (is_system_running) {
+	           switch (frame_idx) {
+	                case 0:  Task_SHT30(); break;
+	                case 5:  Task_Soil();  break;
+	                case 10: Task_SHT30(); break;
+	                case 15: Task_LCD();   break;
+	                default: break;
+	           }
+	           frame_idx++;
+	           if (frame_idx >= total_frames) frame_idx = 0;
+	        }
+
+	        if (timer_flag == 1) {
+	            printf("ERROR: Overrun! Task took > 100ms\r\n");
+	        }
+	        HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
 	   }
   }
   /* USER CODE END 3 */
@@ -414,6 +429,51 @@ static void MX_I2C2_Init(void)
 }
 
 /**
+  * @brief TIM2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM2_Init(void)
+{
+
+  /* USER CODE BEGIN TIM2_Init 0 */
+
+  /* USER CODE END TIM2_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM2_Init 1 */
+
+  /* USER CODE END TIM2_Init 1 */
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 7199;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 999;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM2_Init 2 */
+
+  /* USER CODE END TIM2_Init 2 */
+
+}
+
+/**
   * @brief USART1 Initialization Function
   * @param None
   * @retval None
@@ -469,6 +529,43 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  // Kiểm tra xem có phải Timer 2 ngắt không
+  if (htim->Instance == TIM2) {
+    timer_flag = 1; // Bật cờ báo hiệu đã hết 100ms
+  }
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+  if (huart->Instance == USART1) {
+
+    // [FIX LỖI] Chỉ xử lý '0', '1' nhanh nếu nó là ký tự đầu tiên
+    if ((rx_byte_irq == '0' || rx_byte_irq == '1') && cmd_idx == 0) {
+        cmd_buffer[0] = rx_byte_irq;
+        cmd_buffer[1] = '\0';
+        cmd_flag = 1;
+        cmd_idx = 0;
+    }
+    // Kiểm tra ký tự kết thúc lệnh
+    else if (rx_byte_irq == '\n' || rx_byte_irq == '\r' || rx_byte_irq == '!') {
+        cmd_buffer[cmd_idx] = '\0'; // Kết thúc chuỗi
+        cmd_flag = 1;
+        cmd_idx = 0; // Reset index cho lệnh sau
+    }
+    else {
+        // Nhận dữ liệu bình thường (bao gồm cả số 0 trong 5000)
+        if (cmd_idx < (RX_BUFFER_SIZE - 1)) {
+            cmd_buffer[cmd_idx++] = rx_byte_irq;
+        } else {
+            cmd_idx = 0; // Tràn buffer thì reset
+        }
+    }
+
+    // Bật lại ngắt
+    HAL_UART_Receive_IT(&huart1, &rx_byte_irq, 1);
+  }
+}
 
 /* USER CODE END 4 */
 
